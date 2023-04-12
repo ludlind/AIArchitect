@@ -8,5 +8,37 @@
 			"input_variables": ["text"],
 			"template": "Summarize the following text: \"{text}\". "
 		}
+	},
+	"architecture": {
+		"1": {
+			"a": {
+				"llmactor": "Lister",
+				"receive": {"list": "Fruit"}
+			},
+			"s": {
+				"llmactor": "Summarizer"
+			},
+			"m": {
+				"memoryactor": ""
+			}
+		},
+		"2": {
+			"a": {
+				"bind": {"m": "store"},
+				"alert": {"m": ""}
+			},
+			"s": {
+				"bind": {"m": "replace"},
+				"alert": {"m": ""}
+			},
+			"m": {
+				"bind": {"s": "text"},
+				"alert": {"s": ""}
+			}
+		},
+		"3": {
+			"a": {"act": ""}
+		}
+		
 	}
 }
