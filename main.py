@@ -1,9 +1,7 @@
 import tkinter as tk
 
 currently_connecting = None
-
 components = []
-
 context_menu = None
 
 def on_port_click(event, canvas, port):
@@ -58,9 +56,9 @@ class Port:
         self.canvas.move(self.circle, dx, dy)
         for line, target, position  in self.connected_lines:
             if position == "from":
-                self.canvas.coords(line, port.x + dx, port.y + dy, *self.canvas.coords(line)[2:])
+                self.canvas.coords(line, self.x + dx, self.y + dy, *self.canvas.coords(line)[2:])
             else:
-                self.canvas.coords(line, *self.canvas.coords(line)[:2], port.x + dx, port.y + dy)
+                self.canvas.coords(line, *self.canvas.coords(line)[:2], self.x + dx, self.y + dy)
 
 class DraggableComponent:
     def __init__(self, canvas, x, y, width, height, fill, ctrl_pressed):
@@ -134,7 +132,6 @@ def on_canvas_pan_start(event, canvas, ctrl_pressed):
 def on_canvas_pan_move(event, canvas, ctrl_pressed):
     if ctrl_pressed.get():
         canvas.scan_dragto(event.x, event.y, gain=1)
-
 def on_canvas_right_click(event, canvas, ctrl_pressed):
     global context_menu
     global components

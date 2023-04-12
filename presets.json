@@ -1,0 +1,12 @@
+{
+	"llmactor-presets": {
+		"Lister": {
+			"input_variables": ["list"],
+			"template": "An item in an unordered list starts with a dash \"- \". Generate an unordered list based on the following: \"{list}\". "
+		},
+		"Summarizer": {
+			"input_variables": ["text"],
+			"template": "Summarize the following text: \"{text}\". "
+		}
+	}
+}
