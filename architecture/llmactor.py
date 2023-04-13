@@ -3,6 +3,7 @@ from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from actorinterface import ActorInterface
+from typing import Union
 import json
 
 class LLMActor(ActorInterface):
@@ -43,13 +44,29 @@ class LLMActor(ActorInterface):
                               prompt=self._prompt)
 
     def loadPreset(self,
-                   label: str,
+                   label: Union[str, list[str]],
                    temperature: float=0.7,
                    model_name: str="text-davinci-003"):
-        self.setup(*LLMActor.preset(label),
-                   temperature=temperature,
-                   model_name=model_name)
-        self.name = label
+        if isinstance(label, str):
+            self.setup(*LLMActor.preset(label),
+                       temperature=temperature,
+                       model_name=model_name)
+            self.name = label
+        elif isinstance(label, list):
+            name = ""
+            template = ""
+            input_variables = []
+            for lbl in label:
+                invars, temp = LLMActor.preset(lbl)
+                name += f" {lbl}"
+                template += temp
+                input_variables = list(set().union(input_variables, invars))
+            self.setup(input_variables,
+                       template,
+                       temperature=temperature,
+                       model_name=model_name)
+            self.name = name.strip()
+
 
     def say(self):
         response = self._chain.run(self._ports)
