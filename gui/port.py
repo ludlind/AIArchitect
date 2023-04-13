@@ -29,8 +29,7 @@ class Port:
 
     def __del__(self):
         self.canvas.delete(self.circle)
-        
-        for line, port in self.connected_lines:
+        for line, port, _ in self.connected_lines:
             port._remove_connection_to(self)
 
     def move(self, dx, dy):
