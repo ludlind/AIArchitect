@@ -10,12 +10,13 @@ class MemoryActor(ActorInterface):
     
     def say(self):
         if not self._silent:
-            print(f"{self.name}:\n{self._memory}\n")
+            prestring = f"{self.name}:\n" if self.name != "" else ""
+            print(f"{prestring}{self._memory}\n")
         return self._memory
     
     def act(self):
         response = self.say()
-        for (actor, to) in self._bindings:
+        for (actor, to, _) in self._bindings:
             actor.receive(to, response)
         for actor in self._alerts:
             actor.act()
@@ -32,8 +33,9 @@ class MemoryActor(ActorInterface):
     
     def bind(self,
              actor: ActorInterface,
-             to: str):
-        self._bindings.append((actor, to))
+             to: str,
+             port: str=""):
+        self._bindings.append((actor, to, port))
 
     def alert(self,
               actor: ActorInterface):

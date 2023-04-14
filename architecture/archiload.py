@@ -3,6 +3,9 @@ os.environ["OPENAI_API_KEY"] = "sk-F3wccVaIK3L5aEVBwtAGT3BlbkFJhnPY8qU8jvIRtextb
 
 from llmactor import LLMActor
 from memoryactor import MemoryActor
+from regexactor import RegexActor
+from inputactor import InputActor
+from wrapperactor import WrapperActor
 import json
 import sys
 import argparse
@@ -42,12 +45,30 @@ def loadArch(archdict: dict, debug=False):
                 elif cmdkey == "memoryactor":
                     act = MemoryActor()
                     actorBuffer[key] = act
+                elif cmdkey == "regexactor":
+                    act = RegexActor()
+                    actorBuffer[key] = act
+                elif cmdkey == "inputactor":
+                    act = InputActor()
+                    actorBuffer[key] = act
+                elif cmdkey == "wrapperactor":
+                    act = WrapperActor()
+                    actorBuffer[key] = act
+                elif cmdkey == "name":
+                    if not isinstance(cmdargs, str):
+                        raise ValueError("value of name has to be a string")
+                    act.name = cmdargs
+                elif cmdkey == "silent":
+                    act.silent = True
                 elif cmdkey == "bind":
                     for actkey, value in cmdargs.items():
                         debugmes(actkey, 4, debug)
                         debugmes(value, 5, debug)
                         act2 = actorBuffer[actkey]
-                        act.bind(act2, value)
+                        if isinstance(value, list):
+                            act.bind(act2, value[0], port=value[1])
+                        else:
+                            act.bind(act2, value)
                 elif cmdkey == "alert":
                     for actkey in cmdargs.keys():
                         debugmes(actkey, 4, debug)
@@ -59,6 +80,24 @@ def loadArch(archdict: dict, debug=False):
                         act.receive(input_variable, value)
                 elif cmdkey == "act":
                     act.act()
+                elif cmdkey == "alias":
+                    if not isinstance(act, WrapperActor):
+                        raise TypeError("alias can only be run on wrappers")
+                    for actkey, value in cmdargs.items():
+                        debugmes(actkey, 4, debug)
+                        debugmes(value, 5, debug)
+                        act2 = actorBuffer[actkey]
+                        if isinstance(value, list):
+                            act.alias(act2, value[0], port=value[1])
+                        else:
+                            act.alias(act2, value)
+                elif cmdkey == "internalert":
+                    if not isinstance(act, WrapperActor):
+                        raise TypeError("alias can only be run on wrappers")
+                    for actkey in cmdargs.keys():
+                        debugmes(actkey, 4, debug)
+                        act.intern_alert(actorBuffer[actkey])
+
     return actorBuffer
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ class ActorInterface(ABC):
         pass
     
     @abstractmethod
-    def bind(self, actor, to):
+    def bind(self, actor, to, port=""):
         pass
 
     @abstractmethod

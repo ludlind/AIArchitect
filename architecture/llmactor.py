@@ -72,12 +72,13 @@ class LLMActor(ActorInterface):
         response = self._chain.run(self._ports)
         response = response.strip()
         if not self.silent:
-            print(f"{self._name}:\n{response}\n")
+            prestring = f"{self.name}:\n" if self.name != "" else ""
+            print(f"{prestring}{response}\n")
         return response
 
     def act(self):
         response = self.say()
-        for (actor, to) in self._bindings:
+        for (actor, to, _) in self._bindings:
             actor.receive(to, response)
         for actor in self._alerts:
             actor.act()
@@ -89,8 +90,9 @@ class LLMActor(ActorInterface):
     
     def bind(self,
              actor: ActorInterface,
-             to: str):
-        self._bindings.append((actor, to))
+             to: str,
+             port: str=""):
+        self._bindings.append((actor, to, port))
 
     def alert(self,
               actor: ActorInterface):
