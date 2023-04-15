@@ -1,17 +1,18 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import Tk, Frame, Menu, Canvas, Label, filedialog, Text, Scrollbar
+from tkinter import Tk, BooleanVar, N, S, E, W, Y, X, BOTH, LEFT, RIGHT, TOP, Menu, Canvas, filedialog, Text
+from tkinter import Frame, Label, Scrollbar, PanedWindow
 
 from port import Port
 from draggablecomp import DraggableComponent
 import json
 import sys
-import argparse
 
-class Application(Frame):
+class Application(Tk):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        Tk.__init__(self, *args, **kwargs)
+        self.geometry("500x400+300+300")
         self.canvas = None
         self.text = None
         self.shift_pressed = None
@@ -22,59 +23,67 @@ class Application(Frame):
         self.selection = None
     
     def create(self):
-        self.master.title("AI Architect")
+        self.title("AI Architect")
         
-        self.shift_pressed = tk.BooleanVar(value=False)
-        self.ctrl_pressed = tk.BooleanVar(value=False)
-
-        self.master.columnconfigure(0, weight=1)
-        self.master.columnconfigure(0, weight=2)
-
-        self.sideframe = Frame(self.master, background="darkgray", width=300)
-        self.sideframe.pack(fill=tk.Y, side=tk.LEFT)
-        self.text = Label(self.sideframe, text = "Name", background="darkgray", font="Arial 15 bold")
-        self.text.pack(side="top", padx=30, pady=10, fill=tk.X)
-        #self.text.place(relx=0.5,anchor=tk.N)
-        self.infoframe = Frame(self.sideframe)
-        self.infoframe.pack(side=tk.TOP, fill=tk.BOTH, padx=5, pady=5, expand=True)
-        myscrollbar = Scrollbar(self.infoframe, orient="vertical")
-        myscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        #text= Label(frame, text= "Register", font= ('Helvetica bold', 14))
-        #text.pack(pady=20)
-        #self.sideframe.pack(fill=tk.BOTH, side=tk.LEFT)
-
-        self.canvas = Canvas(self.master, bg="white", scrollregion=(0, 0, 2000, 2000))
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.shift_pressed = BooleanVar(value=False)
+        self.ctrl_pressed = BooleanVar(value=False)
 
         self.create_menubar()
+
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
+        self.paned_window = PanedWindow(self, orient="horizontal")
+        self.paned_window.grid(row=0, column=0, columnspan=2, sticky=N+S+E+W)
+
+        self.sideframe = Frame(self, background="darkgray")
+        self.text = Label(self.sideframe, text = "Name", background="darkgray", font="Arial 15 bold")
+        self.text.pack(side="top", padx=30, pady=10, fill=X)
+        self.infoframe = Frame(self.sideframe)
+        self.infoframe.pack(side=TOP, fill=BOTH, padx=5, pady=5, expand=True)
+        myscrollbar = Scrollbar(self.infoframe, orient="vertical")
+        myscrollbar.pack(side=RIGHT, fill=Y)
+        self.canvas = Canvas(self, bg="white", scrollregion=(0, 0, 2000, 2000))
+
+        self.paned_window.add(self.sideframe)
+        self.paned_window.add(self.canvas)
 
         #canvas.bind("<Motion>", lambda event: on_move(event, canvas, text))
         self.canvas.bind("<Button-3>", self.on_canvas_right_click)
         self.canvas.bind("<ButtonPress-1>", self.on_canvas_left_click)
         self.canvas.bind("<ButtonRelease-1>", self.on_canvas_left_release)
         self.canvas.bind("<B1-Motion>", self.on_canvas_left_hold)
-        self.master.bind("<Control_L>", self.on_ctrl_key)
-        self.master.bind("<KeyRelease-Control_L>", self.on_ctrl_key_release)
-        self.master.bind("<Control_R>", self.on_ctrl_key)
-        self.master.bind("<KeyRelease-Control_R>", self.on_ctrl_key_release)
-        self.master.bind("<Shift_L>", self.on_shift_key)
-        self.master.bind("<KeyRelease-Shift_L>", self.on_shift_key_release)
-        self.master.bind("<Shift_R>", self.on_shift_key)
-        self.master.bind("<KeyRelease-Shift_R>", self.on_shift_key_release)
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.bind("<Control_L>", self.on_ctrl_key)
+        self.bind("<KeyRelease-Control_L>", self.on_ctrl_key_release)
+        self.bind("<Control_R>", self.on_ctrl_key)
+        self.bind("<KeyRelease-Control_R>", self.on_ctrl_key_release)
+        self.bind("<Shift_L>", self.on_shift_key)
+        self.bind("<KeyRelease-Shift_L>", self.on_shift_key_release)
+        self.bind("<Shift_R>", self.on_shift_key)
+        self.bind("<KeyRelease-Shift_R>", self.on_shift_key_release)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def create_menubar(self):
-        self.menubar = Menu(self.master)
-        self.master.config(menu=self.menubar)
+        self.menubar = Menu(self)
+        self.config(menu=self.menubar)
         fileMenu = Menu(self.menubar)
         fileMenu.add_command(label="Exit", command=self.on_closing)
         fileMenu.add_command(label="Open", command=self.open_file)
+        fileMenu.add_command(label="Save", command=self.save_file)
         self.menubar.add_cascade(label="File", menu=fileMenu)
 
-    def load_file(self, filename):
+    #def destroy_info(self):
+    #    for widget in self.infoframe.winfo_children():
+    #        widget.destroy()
+
+    def load_components_from_file(self, filename):
         with open(filename, "r") as f:
             self.compdict = json.load(f)
         DraggableComponent.loadPresets(self.compdict)
+
+    def save_architecture_to_file(self, filename, archdict):
+        with open(filename, "w") as f:
+            json.dump(archdict, f, indent=4)
 
     def selection_destroy(self):
         self.canvas.delete(self.selection)
@@ -82,7 +91,14 @@ class Application(Frame):
 
     def open_file(self):
         name = filedialog.askopenfilename()
-        self.load_file(name)
+        self.load_components_from_file(name)
+
+    def save_file(self):
+        name = filedialog.asksaveasfilename(initialfile = 'Untitled.json',
+                                            defaultextension=".json",
+                                            filetypes=[("All Files","*.*"),("JavaScript Object Notation","*.json")])
+        archdict = self.generate_architecture_dictionary()
+        self.save_architecture_to_file(name, archdict)
 
     def on_ctrl_key(self, event):
         self.ctrl_pressed.set(True)
@@ -124,7 +140,6 @@ class Application(Frame):
                 if inx and iny:
                     DraggableComponent.select(comp)
             self.selection_destroy()
-            print(DraggableComponent.selected_components)
 
     def on_canvas_left_hold(self, event):
         if self.shift_pressed.get():
@@ -144,7 +159,7 @@ class Application(Frame):
             if self.context_menu is not None:
                 self.context_menu.destroy()
                 self.context_menu = None
-            self.context_menu = tk.Menu(self.canvas,
+            self.context_menu = Menu(self.canvas,
                                    tearoff=0)
             for label in DraggableComponent.presets.keys():
                 def cmd(label=label):
@@ -159,25 +174,51 @@ class Application(Frame):
                                    event.y_root)
 
     def on_closing(self):
-        #for comp in DraggableComponent.components.copy():
-        #    comp.__del__()
-        #self.canvas.destroy()
         self.quit()
-
-    def context_menu_callback(self, set=None):
-        if set is not None:
-            self.context_menu = set
-        return self.context_menu
 
     def on_click_component(self, component):
         self.text.config(text=component.name)
 
+    def generate_architecture_dictionary(self):
+        archdict = {}
+        setup_stage = {}
+        struct_stage = {}
+        for i, comp in enumerate(DraggableComponent.components):
+            comp_setup_dict = {}
+            comp_struct_dict = {}
+
+            preset_dict = comp.presets[comp.name]
+            comp_setup_dict[preset_dict["actortype"]] = preset_dict["args"]
+
+            for port in comp.ports:
+                if port.direction == "out":
+                    if port.label == "alert":
+                        comp_struct_dict["alert"] = {}
+                        for (_, con_port, _) in port.connected_lines:
+                            comp_struct_dict["alert"][con_port.component.name + f" {i}"] = ""
+                        if not comp_struct_dict["alert"]:
+                            del comp_struct_dict["alert"]
+                    else:
+                        comp_struct_dict["bind"] = {}
+                        for (_, con_port, _) in port.connected_lines:
+                            comp_struct_dict["bind"][con_port.component.name + f" {i}"] = con_port.label
+                        if not comp_struct_dict["bind"]:
+                            del comp_struct_dict["bind"]
+            if comp_setup_dict:
+                setup_stage[comp.name + f" {i}"] = comp_setup_dict
+            if comp_struct_dict:
+                struct_stage[comp.name + f" {i}"] = comp_struct_dict
+        if setup_stage:
+            archdict["setup_stage"] = setup_stage
+        if struct_stage:
+            archdict["structure_stage"] = struct_stage
+        return archdict
+
+
 def main():
-    root = tk.Tk()
-    root.geometry("500x400+300+300")
     app = Application()
     app.create()
-    root.mainloop()
+    app.mainloop()
 
 if __name__ == "__main__":
     main()

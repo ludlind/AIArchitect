@@ -5,30 +5,53 @@
 			"width": 50,
 			"height": 50,
 			"ports": {
-				"out": {
+				"alert": {
+					"direction": "out",
 					"x": 50,
-					"y": 25
+					"y": 10
 				},
-				"in1": {
+				"out": {
+					"direction": "out",
+					"x": 50,
+					"y": 40
+				},
+				"wake": {
+					"direction": "in",
 					"x": 0,
 					"y": 10
 				},
-				"in2": {
+				"in": {
+					"direction": "in",
 					"x": 0,
 					"y": 40
 				}
-			}
+			},
+			"actortype": "llmactor",
+			"args": "Evaluator"
 		},
 		"Input": {
 			"color": "Grey",
 			"width": 50,
-			"height": 20,
+			"height": 50,
 			"ports": {
-				"out": {
+				"alert": {
+					"direction": "out",
 					"x": 50,
 					"y": 10
+				},
+				"out": {
+					"direction": "out",
+					"x": 50,
+					"y": 40
+				},
+				"wake": {
+					"direction": "in",
+					"x": 0,
+					"y": 10
 				}
-			}
+			},
+			"actortype": "inputactor",
+			"args": ""
 		}
 	}
 }

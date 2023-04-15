@@ -1,0 +1,43 @@
+{
+    "setup_stage": {
+        "Test 0": {
+            "llmactor": "Evaluator"
+        },
+        "Input 1": {
+            "inputactor": ""
+        },
+        "Input 2": {
+            "inputactor": ""
+        },
+        "Test 3": {
+            "llmactor": "Evaluator"
+        }
+    },
+    "structure_stage": {
+        "Input 1": {
+            "alert": {
+                "Test 1": ""
+            },
+            "bind": {
+                "Test 1": "in"
+            }
+        },
+        "Input 2": {
+            "alert": {
+                "Input 2": "",
+                "Test 2": ""
+            },
+            "bind": {
+                "Test 2": "in"
+            }
+        },
+        "Test 3": {
+            "alert": {
+                "Test 3": ""
+            },
+            "bind": {
+                "Test 3": "in"
+            }
+        }
+    }
+}

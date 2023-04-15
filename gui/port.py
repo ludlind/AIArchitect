@@ -4,13 +4,19 @@ class Port:
 
     currently_connecting = None
 
-    def __init__(self, app, component, label, relx, rely, x, y, radius=8, fill="red"):
+    def __init__(self, app, component, label, portdict, x, y):
         self.canvas = app.canvas
         self.component = component
         self.label = label
-        self.x, self.y = relx, rely
-        self.radius = radius
-        self.fill = fill
+        if self.label == "alert":
+            self.fill = "red"
+        elif self.label == "wake":
+            self.fill = "red"
+        else:
+            self.fill = "blue"
+        self.radius = 8
+        self.direction = portdict["direction"]
+        self.x, self.y = portdict["x"], portdict["y"]
         self.circle = self.canvas.create_oval(x + self.x - self.radius, y + self.y - self.radius,
                                               x + self.x + self.radius, y + self.y + self.radius,
                                               fill=self.fill, outline="")

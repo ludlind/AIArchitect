@@ -43,10 +43,10 @@ class DraggableComponent:
     def update_selected(cls):
         for comp in cls.components:
             if comp.selected():
-                #comp.canvas.itemconfig(comp.rectangle, fill=mix_colors(comp.app.master, comp.fill, "green", 0.7))
+                #comp.canvas.itemconfig(comp.rectangle, fill=mix_colors(comp.app, comp.fill, "green", 0.7))
                 comp.canvas.itemconfig(comp.rectangle, outline="green")
                 for port in comp.ports:
-                    #comp.canvas.itemconfig(port.circle, fill=mix_colors(comp.app.master, port.fill, "green", 0.7))
+                    #comp.canvas.itemconfig(port.circle, fill=mix_colors(comp.app, port.fill, "green", 0.7))
                     comp.canvas.itemconfig(port.circle, outline="green")
 
             else:
@@ -80,9 +80,15 @@ class DraggableComponent:
 
     def on_press(self, event):
         if not self.app.shift_pressed.get():
-            if not self.selected():
-                self.select_only(self)
-            self.app.on_click_component(self)
+            if self.app.ctrl_pressed.get():
+                if self.selected():
+                    self.unselect(self)
+                else:
+                    self.select(self)
+            else:
+                if not self.selected():
+                    self.select_only(self)
+                self.app.on_click_component(self)
     
     def on_drag(self, event):
         if not self.app.shift_pressed.get():
@@ -95,20 +101,30 @@ class DraggableComponent:
             comp.start_x, comp.start_y = comp.x, comp.y
 
     def on_right_click(self, event):
-        context_menu = self.app.context_menu_callback()
+        context_menu = self.app.context_menu
         if context_menu is not None:
             context_menu.destroy()
-            context_menu = None
         context_menu = tk.Menu(self.canvas, tearoff=0)
-        context_menu.add_command(label="Delete", command=lambda: self.__del__() )
+        context_menu.add_command(label="Delete", command=lambda: self.delete_selected() )
         context_menu.post(event.x_root, event.y_root)
-        self.app.context_menu_callback(set=context_menu)
+        self.app.context_menu = context_menu
 
     def move(self, dx, dy):
         self.x, self.y = self.start_x + dx, self.start_y + dy
         self.canvas.moveto(self.rectangle, self.x, self.y)
         for port in self.ports:
             port.move()
+
+    def delete_selected(self):
+        if self.selected_components and self.selected():
+            self.unselect(self)
+            for comp in self.selected_components:
+                comp.__del__()
+            self.clear_selection()
+            self.__del__()
+        elif not self.selected():
+            self.__del__()
+        
 
 
     @classmethod
@@ -128,5 +144,5 @@ class DraggableComponent:
                                                       self.x + self.width, self.y + self.height,
                                                       fill=self.fill, outline="")
         for name, portdict in preset["ports"].items():
-            port = Port(self.app, self, name, portdict["x"], portdict["y"], self.x, self.y)
+            port = Port(self.app, self, name, portdict, self.x, self.y)
             self.ports.append(port)
