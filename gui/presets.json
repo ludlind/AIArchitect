@@ -1,0 +1,34 @@
+{
+	"component-presets": {
+		"Test": {
+			"color": "Lightblue",
+			"width": 50,
+			"height": 50,
+			"ports": {
+				"out": {
+					"x": 50,
+					"y": 25
+				},
+				"in1": {
+					"x": 0,
+					"y": 10
+				},
+				"in2": {
+					"x": 0,
+					"y": 40
+				}
+			}
+		},
+		"Input": {
+			"color": "Grey",
+			"width": 50,
+			"height": 20,
+			"ports": {
+				"out": {
+					"x": 50,
+					"y": 10
+				}
+			}
+		}
+	}
+}
