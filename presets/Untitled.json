@@ -1,0 +1,31 @@
+{
+    "include": ["presets/preset.json"],
+    "architecture": {
+        "setup stage": {
+            "Evaluator 1": {
+                "llmactor": "Evaluator",
+                "receive": {
+                    "criteria": "politeness"
+                }
+            },
+            "Input 1": {
+                "inputactor": ""
+            }
+        },
+        "structure stage": {
+            "Input 1": {
+                "alert": {
+                    "Evaluator 1": ""
+                },
+                "bind": {
+                    "Evaluator 1": "text"
+                }
+            }
+        },
+        "run stage": {
+            "Input 1": {
+                "act": ""
+            }
+        }
+    }
+}

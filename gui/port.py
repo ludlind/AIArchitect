@@ -9,6 +9,7 @@ class Port:
         self.canvas = app.canvas
         self.component = component
         self.label = label
+        self.value = ""
         if self.label == "alert":
             self.fill = "red"
         elif self.label == "wake":
@@ -62,15 +63,49 @@ class Port:
         infodisp.setTitle(self.label)
         infodisp.clear()
         infodisp.addLabel("Label")
-        infodisp.addLabel("Direction")
         def set_label(txt, self=self):
             self.label = txt
             self.display_info()
-        def set_dir(txt, self=self):
-            self.direction = txt
-            self.display_info()
         infodisp.addEntry(self.label, set_label)
-        infodisp.addEntry(self.direction, set_dir)
+        if self.label == "wake":
+            infodisp.addLabel("Wake at start (1, 2, ...)")
+            def set_run_order(txt, self=self):
+                if txt == "" or txt.isnumeric():
+                    self.value = txt
+                else:
+                    self.value = ""
+                self.display_info()
+            infodisp.addEntry(self.value, set_run_order)
+        elif self.label != "alert":
+            infodisp.addLabel("Value")
+            def set_value(txt, self=self):
+                self.value = txt
+                self.display_info()
+            infodisp.addEntry(self.value, set_value)
+
+    def dictionary_setup_stage(self, rootdict):
+        if not self.value == "":
+            if self.label != "alert" and self.label != "wake":
+                rootdict["receive"] = {self.label: self.value}
+
+    def dictionary_struct_stage(self, rootdict):
+        port_struct_dict = {}
+        if self.direction == "out":
+            if self.label == "alert":
+                for (_, con_port, _) in self.connected_lines:
+                    port_struct_dict[con_port.component.label] = ""
+                if port_struct_dict:
+                    rootdict["alert"] = port_struct_dict
+            else:
+                for (_, con_port, _) in self.connected_lines:
+                    port_struct_dict[con_port.component.label] = con_port.label
+                if port_struct_dict:
+                    rootdict["bind"] = port_struct_dict
+    
+    def dictionary_run_stage(self, rootdict):
+        if not self.value == "":
+            if self.label == "wake":
+                rootdict["act"] = ""
 
     @classmethod
     def on_left_click(cls, event, canvas, port):

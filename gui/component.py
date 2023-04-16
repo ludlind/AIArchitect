@@ -12,6 +12,7 @@ def mix_colors(root, color1, color2, mix):
 class Component:
 
     presets = {}
+    preset_counter = {}
     components = []
     selected_components = []
 
@@ -110,8 +111,10 @@ class Component:
     def loadPreset(self,
                    label: str):
         preset = self.presets[label]
+        self.preset = preset
         self.fill = preset["color"]
-        self.label = label
+        self.label = label + f" {self.preset_counter[label]}"
+        self.preset_counter[label] += 1
         self.type = preset["actortype"]
         self.args = preset["args"]
         self.width = preset["width"]
@@ -131,6 +134,7 @@ class Component:
                     compdict: str):
         for label, presetdict in compdict["component-presets"].items():
             cls.presets[label] = presetdict
+            cls.preset_counter[label] = 1
     
     @classmethod
     def select(cls, comp):
@@ -170,8 +174,49 @@ class Component:
                     #comp.canvas.itemconfig(port.circle, fill=port.fill)
                     comp.canvas.itemconfig(port.circle, outline="")
 
+    def dictionary_setup_stage(self, rootdict):
+        comp_setup_dict = {}
+        preset_dict = self.preset
+        comp_setup_dict[preset_dict["actortype"]] = preset_dict["args"]
+        for port in self.ports:
+            port.dictionary_setup_stage(comp_setup_dict)
+        if comp_setup_dict:
+            rootdict[self.label] = comp_setup_dict
+
+    def dictionary_struct_stage(self, rootdict):
+        comp_struct_dict = {}
+        for port in self.ports:
+            port.dictionary_struct_stage(comp_struct_dict)
+        if comp_struct_dict:
+            rootdict[self.label] = comp_struct_dict
+
+    def dictionary_run_stage(self, rootdict):
+        comp_run_dict = {}
+        for port in self.ports:
+            port.dictionary_run_stage(comp_run_dict)
+        if comp_run_dict:
+            rootdict[self.label] = comp_run_dict
+
     @classmethod
-    def generate_architecture_dictionary(cls):
+    def dictionary_architecture(cls):
+        archdict = {}
+        setup_stage = {}
+        struct_stage = {}
+        run_stage = {}
+        for comp in cls.components:
+            comp.dictionary_setup_stage(setup_stage)
+            comp.dictionary_struct_stage(struct_stage)
+            comp.dictionary_run_stage(run_stage)
+        if setup_stage:
+            archdict["setup stage"] = setup_stage
+        if struct_stage:
+            archdict["structure stage"] = struct_stage
+        if run_stage:
+            archdict["run stage"] = run_stage
+        return archdict
+"""
+    @classmethod
+    def generate_dictionary(cls):
         archdict = {}
         setup_stage = {}
         struct_stage = {}
@@ -205,3 +250,4 @@ class Component:
         if struct_stage:
             archdict["structure_stage"] = struct_stage
         return archdict
+"""

@@ -97,8 +97,19 @@ def loadArch(archdict: dict, debug=False):
                     for actkey in cmdargs.keys():
                         debugmes(actkey, 4, debug)
                         act.intern_alert(actorBuffer[actkey])
-
     return actorBuffer
+
+def loadFile(filename, debug):
+    with open(filename, "r") as f:
+        dictionary = json.load(f)
+    if "include" in dictionary:
+        for incfilename in dictionary["include"]:
+            loadFile(incfilename, debug)
+    if "llmactor-presets" in dictionary:
+        LLMActor.loadPresets(dictionary)
+    if "architecture" in dictionary:
+        debugmes("\nBuild Order:", 0, debug)
+        loadArch(dictionary, debug=debug)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -108,8 +119,4 @@ if __name__ == "__main__":
     parser.add_argument('filename')
     parser.add_argument('-d', '--debug', action='store_true')
     args = parser.parse_args()
-    with open(args.filename, "r") as f:
-        archdict = json.load(f)
-    LLMActor.loadPresets(archdict)
-    debugmes("\nBuild Order:", 0, args.debug)
-    loadArch(archdict, debug=args.debug)
+    loadFile(args.filename, args.debug)

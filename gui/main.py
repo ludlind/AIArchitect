@@ -14,6 +14,7 @@ class Application(Tk):
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
         self.geometry("500x400+300+300")
+        self.include_files = ["presets/preset.json"]
         self.canvas = None
         self.text = None
         self.shift_pressed = None
@@ -74,9 +75,9 @@ class Application(Tk):
             self.compdict = json.load(f)
         Component.loadPresets(self.compdict)
 
-    def save_architecture_to_file(self, filename, archdict):
+    def save_dictionary_to_file(self, filename, dictionary):
         with open(filename, "w") as f:
-            json.dump(archdict, f, indent=4)
+            json.dump(dictionary, f, indent=4)
 
     def selection_destroy(self):
         self.canvas.delete(self.selection)
@@ -90,8 +91,10 @@ class Application(Tk):
         name = filedialog.asksaveasfilename(initialfile = 'Untitled.json',
                                             defaultextension=".json",
                                             filetypes=[("All Files","*.*"),("JavaScript Object Notation","*.json")])
-        archdict = Component.generate_architecture_dictionary()
-        self.save_architecture_to_file(name, archdict)
+        dictionary = {}
+        dictionary["architecture"] = Component.dictionary_architecture()
+        dictionary["include"] = self.include_files
+        self.save_dictionary_to_file(name, dictionary)
 
     def on_ctrl_key(self, event):
         self.ctrl_pressed.set(True)
@@ -171,6 +174,8 @@ class Application(Tk):
 
 def main():
     app = Application()
+    for filename in app.include_files:
+        app.load_components_from_file(filename)
     app.create()
     app.mainloop()
 
