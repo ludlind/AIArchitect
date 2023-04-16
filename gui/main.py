@@ -1,12 +1,75 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import Tk, BooleanVar, N, S, E, W, Y, X, BOTH, LEFT, RIGHT, TOP, Menu, Canvas, filedialog, Text
-from tkinter import Frame, Label, Scrollbar, PanedWindow
+from tkinter import Frame, Label, Scrollbar, PanedWindow, Entry, StringVar
 
 from port import Port
-from draggablecomp import DraggableComponent
+from component import Component
 import json
 import sys
+
+class InfoDisplay(Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.grid_rowconfigure(0,weight=1)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+        self.scrollbar = Scrollbar(self, orient="vertical")
+        self.canvas = Canvas(self, bd=0, highlightthickness=0,
+                             yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.canvas.yview)
+        self.canvas.grid_rowconfigure(0,weight=1)
+        self.canvas.grid_columnconfigure(0,weight=1)
+        self.canvas.grid_columnconfigure(1,weight=1)
+        self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+
+        self.canvas.xview_moveto(0)
+        self.canvas.yview_moveto(0)
+
+        self.interior = interior = Frame(self.canvas)
+        interior_id = self.canvas.create_window(0, 0, window=interior, anchor=N+W)
+
+        self.widgets = []
+        self.rowcol0 = 0
+        self.rowcol1 = 0
+        self.font = "Arial 12"
+
+        def _configure_interior(event):
+            # Update the scrollbars to match the size of the inner frame.
+            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
+            self.canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
+                # Update the canvas's width to fit the inner frame.
+                self.canvas.config(width=interior.winfo_reqwidth())
+        interior.bind('<Configure>', _configure_interior)
+
+        def _configure_canvas(event):
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
+                # Update the inner frame's width to fill the canvas.
+                self.canvas.itemconfigure(interior_id, width=self.canvas.winfo_width())
+        self.canvas.bind('<Configure>', _configure_canvas)
+    
+    def clear(self):
+        for widget in self.widgets:
+            widget.destroy()
+        self.widgets.clear()
+        self.rowcol0 = 0
+        self.rowcol1 = 0
+
+    def addLabel(self, text):
+        lb = Label(self.interior, text=text, font=self.font)
+        lb.grid(row=self.rowcol0, column=0)
+        self.rowcol0 += 1
+        self.widgets.append(lb)
+    
+    def addEntry(self, callback):
+        sv = StringVar()
+        en = Entry(self.interior, font=self.font, textvariable=sv)
+        en.bind('<FocusOut>', lambda: callback(sv))
+        en.grid(row=self.rowcol0, column=1)
+        self.rowcol1 += 1
+        self.widgets.append(en)
 
 class Application(Tk):
 
@@ -30,8 +93,8 @@ class Application(Tk):
 
         self.create_menubar()
 
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0,weight=1)
+        self.columnconfigure(0,weight=1)
 
         self.paned_window = PanedWindow(self, orient="horizontal")
         self.paned_window.grid(row=0, column=0, columnspan=2, sticky=N+S+E+W)
@@ -39,10 +102,8 @@ class Application(Tk):
         self.sideframe = Frame(self, background="darkgray")
         self.text = Label(self.sideframe, text = "Name", background="darkgray", font="Arial 15 bold")
         self.text.pack(side="top", padx=30, pady=10, fill=X)
-        self.infoframe = Frame(self.sideframe)
-        self.infoframe.pack(side=TOP, fill=BOTH, padx=5, pady=5, expand=True)
-        myscrollbar = Scrollbar(self.infoframe, orient="vertical")
-        myscrollbar.pack(side=RIGHT, fill=Y)
+        self.infodisp = InfoDisplay(self.sideframe)
+        self.infodisp.pack(side=TOP, fill=BOTH, padx=5, pady=5, expand=True)
         self.canvas = Canvas(self, bg="white", scrollregion=(0, 0, 2000, 2000))
 
         self.paned_window.add(self.sideframe)
@@ -72,14 +133,10 @@ class Application(Tk):
         fileMenu.add_command(label="Save", command=self.save_file)
         self.menubar.add_cascade(label="File", menu=fileMenu)
 
-    #def destroy_info(self):
-    #    for widget in self.infoframe.winfo_children():
-    #        widget.destroy()
-
     def load_components_from_file(self, filename):
         with open(filename, "r") as f:
             self.compdict = json.load(f)
-        DraggableComponent.loadPresets(self.compdict)
+        Component.loadPresets(self.compdict)
 
     def save_architecture_to_file(self, filename, archdict):
         with open(filename, "w") as f:
@@ -126,19 +183,19 @@ class Application(Tk):
                                               self.canvas.canvasy(event.y) + 1):
             if self.selection is not None:
                 self.selection_destroy()
-            DraggableComponent.clear_selection()
+            Component.clear_selection()
             self.selection = self.canvas.create_rectangle(self.click_x, self.click_y,
                                                           self.click_x, self.click_y,
                                                           outline="red", fill="")
             
     def on_canvas_left_release(self, event):
         if self.selection is not None:
-            DraggableComponent.clear_selection()
-            for comp in DraggableComponent.components:
+            Component.clear_selection()
+            for comp in Component.components:
                 inx = (self.click_x - comp.x)*(self.canvas.canvasx(event.x) - comp.x) < 0
                 iny = (self.click_y - comp.y)*(self.canvas.canvasy(event.y) - comp.y) < 0
                 if inx and iny:
-                    DraggableComponent.select(comp)
+                    Component.select(comp)
             self.selection_destroy()
 
     def on_canvas_left_hold(self, event):
@@ -161,10 +218,10 @@ class Application(Tk):
                 self.context_menu = None
             self.context_menu = Menu(self.canvas,
                                    tearoff=0)
-            for label in DraggableComponent.presets.keys():
+            for label in Component.presets.keys():
                 def cmd(label=label):
-                    DraggableComponent.components.append(
-                        DraggableComponent(self,
+                    Component.components.append(
+                        Component(self,
                                            self.canvas.canvasx(event.x),
                                            self.canvas.canvasy(event.y),
                                            label)
@@ -178,12 +235,13 @@ class Application(Tk):
 
     def on_click_component(self, component):
         self.text.config(text=component.name)
+        component.display_info()
 
     def generate_architecture_dictionary(self):
         archdict = {}
         setup_stage = {}
         struct_stage = {}
-        for i, comp in enumerate(DraggableComponent.components):
+        for i, comp in enumerate(Component.components):
             comp_setup_dict = {}
             comp_struct_dict = {}
 
