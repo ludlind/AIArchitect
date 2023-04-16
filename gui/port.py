@@ -5,6 +5,7 @@ class Port:
     currently_connecting = None
 
     def __init__(self, app, component, label, portdict, x, y):
+        self.app = app
         self.canvas = app.canvas
         self.component = component
         self.label = label
@@ -21,7 +22,7 @@ class Port:
                                               x + self.x + self.radius, y + self.y + self.radius,
                                               fill=self.fill, outline="")
         self.connected_lines = []
-        self.canvas.tag_bind(self.circle, "<Button-1>", lambda event: self.on_port_click(event, self.canvas, self))
+        self.canvas.tag_bind(self.circle, "<Button-1>", lambda event: self.on_left_click(event, self.canvas, self))
 
 
     def _remove_connection_to(self, target_port):
@@ -56,24 +57,41 @@ class Port:
             else:
                 self.canvas.coords(line, *self.canvas.coords(line)[:2], self.absx, self.absy)
 
+    def display_info(self):
+        infodisp = self.app.infodisp
+        infodisp.setTitle(self.label)
+        infodisp.clear()
+        infodisp.addLabel("Label")
+        infodisp.addLabel("Direction")
+        def set_label(txt, self=self):
+            self.label = txt
+            self.display_info()
+        def set_dir(txt, self=self):
+            self.direction = txt
+            self.display_info()
+        infodisp.addEntry(self.label, set_label)
+        infodisp.addEntry(self.direction, set_dir)
+
     @classmethod
-    def on_port_click(cls, event, canvas, port):
-        if cls.currently_connecting is None:
-            cls.currently_connecting = port
-            canvas.itemconfig(cls.currently_connecting.circle, fill = "cyan")
-        else:
-            if cls.currently_connecting is not port:
-                connection_exists = False
-                for conln in cls.currently_connecting.connected_lines:
-                    if port is conln[1]:
-                        cls.currently_connecting.remove_connection(port)
-                        connection_exists = True
-                if not connection_exists:
-                    line = canvas.create_line(cls.currently_connecting.absx, cls.currently_connecting.absy,
-                                              port.absx, port.absy,
-                                              width=3, fill="darkgrey")
-                    cls.currently_connecting.connected_lines.append((line, port, "from"))
-                    port.connected_lines.append((line, cls.currently_connecting, "to"))
-            if cls.currently_connecting is not None:
-                canvas.itemconfig(cls.currently_connecting.circle, fill=cls.currently_connecting.fill)
-                cls.currently_connecting = None
+    def on_left_click(cls, event, canvas, port):
+        if True:
+            port.display_info()
+            if cls.currently_connecting is None:
+                cls.currently_connecting = port
+                canvas.itemconfig(cls.currently_connecting.circle, fill = "cyan")
+            else:
+                if cls.currently_connecting is not port:
+                    connection_exists = False
+                    for conln in cls.currently_connecting.connected_lines:
+                        if port is conln[1]:
+                            cls.currently_connecting.remove_connection(port)
+                            connection_exists = True
+                    if not connection_exists:
+                        line = canvas.create_line(cls.currently_connecting.absx, cls.currently_connecting.absy,
+                                                  port.absx, port.absy,
+                                                  width=3, fill="darkgrey")
+                        cls.currently_connecting.connected_lines.append((line, port, "from"))
+                        port.connected_lines.append((line, cls.currently_connecting, "to"))
+                if cls.currently_connecting is not None:
+                    canvas.itemconfig(cls.currently_connecting.circle, fill=cls.currently_connecting.fill)
+                    cls.currently_connecting = None
