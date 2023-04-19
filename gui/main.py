@@ -3,6 +3,9 @@ from tkinter import ttk
 from tkinter import Tk, BooleanVar, N, S, E, W, Y, X, BOTH, LEFT, RIGHT, TOP, Menu, Canvas, filedialog, Text
 from tkinter import Frame, Label, Scrollbar, PanedWindow, Entry, StringVar
 
+from ..architecture import *
+#from ..architecture.llmactor import LLMActor
+
 from infodisplay import InfoDisplay
 from port import Port
 from component import Component
@@ -69,6 +72,10 @@ class Application(Tk):
         fileMenu.add_command(label="Open", command=self.open_file)
         fileMenu.add_command(label="Save", command=self.save_file)
         self.menubar.add_cascade(label="File", menu=fileMenu)
+        runMenu = Menu(self.menubar)
+        runMenu.add_command(label="Run", command=lambda: self.run_dictionary(False))
+        runMenu.add_command(label="Debug", command=lambda: self.run_dictionary(True))
+        self.menubar.add_cascade(label="Run", menu=runMenu)
 
     def load_components_from_file(self, filename):
         with open(filename, "r") as f:
@@ -95,6 +102,17 @@ class Application(Tk):
         dictionary["architecture"] = Component.dictionary_architecture()
         dictionary["include"] = self.include_files
         self.save_dictionary_to_file(name, dictionary)
+
+    def run_dictionary(self, debug):
+        for incfilename in self.include_files:
+            archiload.loadFile(incfilename, debug)
+        dictionary = {}
+        dictionary["architecture"] = Component.dictionary_architecture()
+        if "llmactor-presets" in dictionary:
+            LLMActor.loadPresets(dictionary)
+        if "architecture" in dictionary:
+            archiload.archdebugmes("\nBuild Order:", 0, debug)
+            archiload.loadArch(dictionary, debug=debug)
 
     def on_ctrl_key(self, event):
         self.ctrl_pressed.set(True)

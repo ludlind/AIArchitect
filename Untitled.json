@@ -1,30 +1,18 @@
 {
     "architecture": {
         "setup stage": {
-            "Memory 1": {
-                "memoryactor": ""
-            },
-            "Input 1": {
-                "inputactor": ""
-            },
             "OrderedLister 1": {
                 "llmactor": "OrderedLister"
             },
-            "Evaluator 1": {
-                "llmactor": "Evaluator",
-                "receive": {
-                    "criteria": "Is the plan complete"
-                }
-            },
-            "Memory 2": {
-                "memoryactor": ""
-            },
             "Summarizer 1": {
                 "llmactor": "Summarizer"
+            },
+            "Input 1": {
+                "inputactor": ""
             }
         },
         "structure stage": {
-            "Memory 1": {
+            "OrderedLister 1": {
                 "alert": {
                     "Summarizer 1": ""
                 },
@@ -37,50 +25,15 @@
                     "OrderedLister 1": ""
                 },
                 "bind": {
-                    "OrderedLister 1": "subject",
-                    "Memory 2": "store"
-                }
-            },
-            "OrderedLister 1": {
-                "alert": {
-                    "Memory 2": ""
-                },
-                "bind": {
-                    "Memory 1": "store",
-                    "Memory 2": "store"
-                }
-            },
-            "Evaluator 1": {
-                "alert": {
-                    "Memory 1": ""
-                },
-                "bind": {
-                    "Memory 1": "store"
-                }
-            },
-            "Memory 2": {
-                "alert": {
-                    "Evaluator 1": ""
-                },
-                "bind": {
-                    "Evaluator 1": "text"
-                }
-            },
-            "Summarizer 1": {
-                "alert": {
-                    "Evaluator 1": ""
-                },
-                "bind": {
-                    "Memory 1": "store",
-                    "Evaluator 1": "text"
+                    "OrderedLister 1": "subject"
                 }
             }
         },
-    	"run stage": {
-	    "Input 1": {
-		"act": ""
-	    }
-    	}
+        "run stage": {
+            "Input 1": {
+                "act": ""
+            }
+        }
     },
     "include": [
         "presets/preset.json"
