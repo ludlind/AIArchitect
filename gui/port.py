@@ -138,6 +138,7 @@ class Port:
                                                   port.absx, port.absy,
                                                   width=8, fill="darkgrey",
                                                   smooth=True)
+                        canvas.tag_lower(line)
                         cls.currently_connecting.canvas.tag_bind(line, "<B1-Motion>",
                                                                  lambda event: cls.line_on_left_hold(event,
                                                                                                      port=port,
