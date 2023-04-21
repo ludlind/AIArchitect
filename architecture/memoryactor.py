@@ -1,6 +1,9 @@
 from actorinterface import ActorInterface
 
 class MemoryActor(ActorInterface):
+    
+    _type_label = "memoryactor"
+
     def __init__(self):
         self._name = "Memory"
         self._bindings = []

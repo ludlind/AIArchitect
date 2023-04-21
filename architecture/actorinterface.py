@@ -1,7 +1,13 @@
 from abc import ABC, abstractmethod
 
 class ActorInterface(ABC):
+
+    _subclass_dictionary = dict()
     
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls._subclass_dictionary[cls._type_label] = cls
+
     @abstractmethod
     def act(self):
         pass

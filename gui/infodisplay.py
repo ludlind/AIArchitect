@@ -15,45 +15,56 @@ class InfoDisplay(Frame):
         self.text = Label(parent, text = "Name", background="darkgray", font="Arial 15 bold")
         self.text.pack(side="top", padx=30, pady=10, fill=X)
         
-        self.grid_rowconfigure(0,weight=1)
-        self.grid_columnconfigure(0,weight=1)
-        self.grid_columnconfigure(1,weight=1)
-        self.scrollbar = Scrollbar(self, orient="vertical")
-        self.canvas = Canvas(self, bd=0, highlightthickness=0,
-                             yscrollcommand=self.scrollbar.set)
-        self.scrollbar.config(command=self.canvas.yview)
-        self.canvas.grid_rowconfigure(0,weight=1)
-        self.canvas.grid_columnconfigure(0,weight=1)
-        self.canvas.grid_columnconfigure(1,weight=1)
+        self.canvas = Canvas(self)
+        self.scrollbar = Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        #self.interior = Frame(self.canvas)
+        self.interior = PanedWindow(self.canvas, orient="horizontal")
+        self.interior_labels = PanedWindow(self.interior, orient="vertical")
+        self.interior_entries = PanedWindow(self.interior, orient="vertical")
+        self.interior.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+
+        canvas_frame = self.canvas.create_window((0, 0), window=self.interior, anchor=N+W)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        def at_resize(event):
+            canvas = self.canvas
+            min_width = self.interior.winfo_reqwidth()
+            min_height = self.interior.winfo_reqheight()
+            if min_width < event.width:
+                canvas.itemconfigure(canvas_frame, width=event.width)
+            if min_height < event.height:
+                canvas.itemconfigure(canvas_frame, height=event.height)
+
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        self.canvas.bind(
+            "<Configure>",
+            at_resize
+        )
+
+        self.pack()
         self.canvas.pack(side=LEFT, fill=BOTH, expand=True)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.canvas.xview_moveto(0)
-        self.canvas.yview_moveto(0)
+        #self.interior.grid_columnconfigure(0,weight=1)
+        #self.interior.grid_columnconfigure(1,weight=1)
 
-        self.interior = interior = Frame(self.canvas)
-        interior_id = self.canvas.create_window(0, 0, window=interior, anchor=N+W)
+        self.interior.pack(side=TOP, fill=BOTH, expand=True)
+        #self.interior.add(self.interior_labels)
+        #self.interior.add(self.interior_entries)
+        self.interior_labels.pack(side=LEFT, fill=Y)
+        self.interior_entries.pack(side=RIGHT, fill=BOTH, expand=True)
 
         self.widgets = []
         self.rowcol0 = 0
         self.rowcol1 = 0
         self.font = "Arial 12"
 
-        def _configure_interior(event):
-            # Update the scrollbars to match the size of the inner frame.
-            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            self.canvas.config(scrollregion="0 0 %s %s" % size)
-            if interior.winfo_reqwidth() != self.canvas.winfo_width():
-                # Update the canvas's width to fit the inner frame.
-                self.canvas.config(width=interior.winfo_reqwidth())
-        interior.bind('<Configure>', _configure_interior)
-
-        def _configure_canvas(event):
-            if interior.winfo_reqwidth() != self.canvas.winfo_width():
-                # Update the inner frame's width to fill the canvas.
-                self.canvas.itemconfigure(interior_id, width=self.canvas.winfo_width())
-        self.canvas.bind('<Configure>', _configure_canvas)
-    
     def clear(self):
         for widget in self.widgets:
             widget.destroy()
@@ -61,6 +72,26 @@ class InfoDisplay(Frame):
         self.rowcol0 = 0
         self.rowcol1 = 0
 
+    def addLabel(self, text):
+        lb = Label(self.interior_labels, text=text, font=self.font)
+        lb.pack(side=TOP, fill=X, padx=1, pady=1)
+        self.rowcol0 += 1
+        self.widgets.append(lb)
+    
+    def addEntry(self, text, callback):
+        sv = StringVar()
+        en = Entry(self.interior_entries, font=self.font, textvariable=sv)
+        en.insert(0, text)
+        en.bind("<Return>", (lambda event: callback(en.get())))
+        en.bind('<FocusOut>', lambda event: callback(en.get()))
+        en.pack(side=TOP, fill=X, padx=1, pady=1)
+        self.rowcol1 += 1
+        self.widgets.append(en)
+
+    def setTitle(self, text):
+        self.text.config(text=text)
+
+"""
     def addLabel(self, text):
         lb = Label(self.interior, text=text, font=self.font)
         lb.grid(row=self.rowcol0, column=0, sticky=N+E+W, pady=1, padx=1)
@@ -76,6 +107,4 @@ class InfoDisplay(Frame):
         en.grid(row=self.rowcol1, column=1, sticky=N+E+W, pady=1, padx=(1, 0))
         self.rowcol1 += 1
         self.widgets.append(en)
-
-    def setTitle(self, text):
-        self.text.config(text=text)
+"""

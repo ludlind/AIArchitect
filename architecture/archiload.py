@@ -1,11 +1,15 @@
 import os
 os.environ["OPENAI_API_KEY"] = "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"
+os.environ["ELEVEN_API_KEY"] = "e4e7cd6dd6d00c1035bc7f5f123b06a6"
 
+from actorinterface import ActorInterface
 from llmactor import LLMActor
 from memoryactor import MemoryActor
 from regexactor import RegexActor
 from inputactor import InputActor
 from wrapperactor import WrapperActor
+from voiceactor import VoiceActor
+from conditionalactor import ConditionalActor
 import json
 import sys
 import argparse
@@ -37,6 +41,18 @@ def loadArch(archdict: dict, debug=False):
                 act = actorBuffer[key]
             for cmdkey, cmdargs in cmds.items():
                 debugmes(cmdkey, 3, debug)
+                
+                
+                for label, cls in ActorInterface._subclass_dictionary.items():
+                    if cmdkey == label:
+                        act = cls()
+                        if cmdkey == "llmactor":
+                            debugmes(cmdargs, 4, debug)
+                            act.loadPreset(cmdargs)
+                        actorBuffer[key] = act
+                
+                
+                """
                 if cmdkey == "llmactor":
                     debugmes(cmdargs, 4, debug)
                     act = LLMActor()
@@ -54,7 +70,11 @@ def loadArch(archdict: dict, debug=False):
                 elif cmdkey == "wrapperactor":
                     act = WrapperActor()
                     actorBuffer[key] = act
-                elif cmdkey == "name":
+                elif cmdkey == "voiceactor":
+                    act = VoiceActor()
+                    actorBuffer[key] = act
+                """
+                if cmdkey == "name":
                     if not isinstance(cmdargs, str):
                         raise ValueError("value of name has to be a string")
                     act.name = cmdargs

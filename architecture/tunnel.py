@@ -1,9 +1,10 @@
+"""
 from actorinterface import ActorInterface
 
 class Tunnel(ActorInterface):
-    """
+    #"""
     Basically just a temporary solution to the issue of connection lines overlapping components.
-    """
+    #"""
 
     tunnels = []
 
@@ -59,3 +60,4 @@ class Tunnel(ActorInterface):
     def silent(self,
              silent: bool):
         self._silent = silent
+"""

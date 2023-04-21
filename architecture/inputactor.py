@@ -1,6 +1,9 @@
 from actorinterface import ActorInterface
 
 class InputActor(ActorInterface):
+    
+    _type_label = "inputactor"
+
     def __init__(self):
         self._name = "Input"
         self._prompt = "Prompt: "

@@ -289,6 +289,64 @@
 			},
 			"actortype": "memoryactor",
 			"args": ""
+		},
+		"Conditional": {
+			"color": "slate gray",
+			"width": 50,
+			"height": 40,
+			"ports": {
+				"if-true": {
+					"direction": "out",
+					"x": 50,
+					"y": 10
+				},
+				"if-false": {
+					"direction": "out",
+					"x": 50,
+					"y": 30
+				},
+				"wake": {
+					"direction": "in",
+					"x": 0,
+					"y": 10
+				},
+				"text": {
+					"direction": "in",
+					"x": 0,
+					"y": 30
+				}
+			},
+			"actortype": "conditionalactor",
+			"args": ""
+		},
+		"Voice": {
+			"color": "green",
+			"width": 50,
+			"height": 60,
+			"ports": {
+				"alert": {
+					"direction": "out",
+					"x": 50,
+					"y": 10
+				},
+				"wake": {
+					"direction": "in",
+					"x": 0,
+					"y": 10
+				},
+				"text": {
+					"direction": "in",
+					"x": 0,
+					"y": 30
+				},
+				"voice": {
+					"direction": "in",
+					"x": 0,
+					"y": 50
+				}
+			},
+			"actortype": "voiceactor",
+			"args": ""
 		}
 	}
 }

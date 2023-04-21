@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import Tk, BooleanVar, N, S, E, W, Y, X, BOTH, LEFT, RIGHT, TOP, Menu, Canvas, filedialog, Text
 from tkinter import Frame, Label, Scrollbar, PanedWindow, Entry, StringVar
 
-from ..architecture import *
+#from ..architecture import *
 #from ..architecture.llmactor import LLMActor
 
 from infodisplay import InfoDisplay
@@ -39,13 +39,14 @@ class Application(Tk):
         self.columnconfigure(0,weight=1)
 
         self.paned_window = PanedWindow(self, orient="horizontal")
-        self.paned_window.grid(row=0, column=0, columnspan=2, sticky=N+S+E+W)
+        self.paned_window.grid(row=0, column=0, columnspan=1, sticky=N+S+E+W)
+        #self.paned_window.pack(side=LEFT, fill=BOTH)
 
         self.sideframe = Frame(self, background="darkgray")
         self.infodisp = InfoDisplay(self.sideframe)
         self.infodisp.pack(side=TOP, fill=BOTH, padx=5, pady=5, expand=True)
         self.canvas = Canvas(self, bg="white", scrollregion=(0, 0, 2000, 2000))
-
+        
         self.paned_window.add(self.sideframe)
         self.paned_window.add(self.canvas)
 
@@ -104,15 +105,16 @@ class Application(Tk):
         self.save_dictionary_to_file(name, dictionary)
 
     def run_dictionary(self, debug):
-        for incfilename in self.include_files:
-            archiload.loadFile(incfilename, debug)
-        dictionary = {}
-        dictionary["architecture"] = Component.dictionary_architecture()
-        if "llmactor-presets" in dictionary:
-            LLMActor.loadPresets(dictionary)
-        if "architecture" in dictionary:
-            archiload.archdebugmes("\nBuild Order:", 0, debug)
-            archiload.loadArch(dictionary, debug=debug)
+        pass
+        #for incfilename in self.include_files:
+        #    archiload.loadFile(incfilename, debug)
+        #dictionary = {}
+        #dictionary["architecture"] = Component.dictionary_architecture()
+        #if "llmactor-presets" in dictionary:
+        #    LLMActor.loadPresets(dictionary)
+        #if "architecture" in dictionary:
+        #    archiload.archdebugmes("\nBuild Order:", 0, debug)
+        #    archiload.loadArch(dictionary, debug=debug)
 
     def on_ctrl_key(self, event):
         self.ctrl_pressed.set(True)

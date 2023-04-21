@@ -9,6 +9,7 @@ import json
 class LLMActor(ActorInterface):
 
     presets = {}
+    _type_label = "llmactor"
 
     def __init__(self):
         self._name = ""

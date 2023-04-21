@@ -3,6 +3,8 @@ from actorinterface import ActorInterface
 
 class WrapperActor(ActorInterface):
 
+    _type_label = "wrapperactor"
+
     def __init__(self):
         self._name = "Wrapper"
         self._alerts = []

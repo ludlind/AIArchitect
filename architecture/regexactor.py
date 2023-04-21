@@ -2,6 +2,9 @@ from actorinterface import ActorInterface
 import re
 
 class RegexActor(ActorInterface):
+    
+    _type_label = "regexactor"
+
     def __init__(self):
         self._name = "Regular Expression"
         self._bindings = []
