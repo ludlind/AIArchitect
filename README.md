@@ -1,1 +1,2 @@
-A simple tool for constructing cognitive architectures that incorporate LLMs and other models as well as memory and tools. AIArchitect is built on top of [LangChain](https://python.langchain.com/en/latest/index.html) which provides most of this functionality. The main idea of AIArchitect is to conceptualize cognitive architectures as an organization of actors, where each actor has a particular role, and to provide a simple way of building such architectures.
+Aims to provide a simple interface for creating complex architectures based on LLMs as well as memory, tools and eventually other models.
+Role management for LLM agents is handled through presets that can be modified by the user through the preset.json file.
