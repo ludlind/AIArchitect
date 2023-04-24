@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class ActorInterface(ABC):
+class Interface(ABC):
 
     _subclass_dictionary = dict()
     
@@ -17,11 +17,11 @@ class ActorInterface(ABC):
         pass
     
     @abstractmethod
-    def bind(self, actor, to, port=""):
+    def bind(self, component, to, port=""):
         pass
 
     @abstractmethod
-    def alert(self, actor):
+    def alert(self, component):
         pass
 
     @property

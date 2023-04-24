@@ -1,11 +1,10 @@
-from .actorinterface import ActorInterface
-#import json
+from .interface import Interface
 
-class WrapperActor(ActorInterface):
+class Wrapper(Interface):
 
-    _type_label = "wrapperactor"
+    _type_label = "wrapper"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = "Wrapper"
         self._alerts = []
         self._internalerts = []
@@ -16,13 +15,13 @@ class WrapperActor(ActorInterface):
     def act(self):
         if self._wakeup:
             self._wakeup = False
-            for actor in self._alerts:
-                actor.act()
+            for component in self._alerts:
+                component.act()
         else:
             if not self.silent and self.name != "":
                 print(f"{self._name}:")
-            for actor in self._internalerts:
-                actor.act()
+            for component in self._internalerts:
+                component.act()
 
     def receive(self,
                 key: str,
@@ -30,31 +29,31 @@ class WrapperActor(ActorInterface):
         if key == "_wakeup":
             self._wakeup = True
         else:
-            actor, port = self._aliases[key]
-            actor.receive(port, value)
+            component, port = self._aliases[key]
+            component.receive(port, value)
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
         if port not in self._aliases:
             raise ValueError("must specify a valid wrapper outport when binding wrapper")
-        internal_actor, intport = self._aliases[port]
-        internal_actor.bind(actor, to, port=intport)
+        internal_component, intport = self._aliases[port]
+        internal_component.bind(component, to, port=intport)
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     def intern_alert(self,
-                     actor: ActorInterface):
-        self._internalerts.append(actor)
+                     component: Interface):
+        self._internalerts.append(component)
 
     def alias(self,
-              actor: ActorInterface,
+              component: Interface,
               alias: str,
               port: str=""):
-        self._aliases[alias] = (actor, port)
+        self._aliases[alias] = (component, port)
 
     @property
     def name(self):

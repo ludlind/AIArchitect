@@ -1,0 +1,475 @@
+---
+llmactor-presets:
+  UnorderedLister:
+    input_variables:
+    - subject
+    template: 'An item in an unordered list starts with a dash "- ". Generate an unordered
+      list based on the following: "{subject}". '
+  OrderedLister:
+    input_variables:
+    - subject
+    template: 'An item in an ordered list starts with a number "1. ". Generate an
+      ordered list based on the following: "{subject}". '
+  Checker:
+    input_variables:
+    - text
+    - condition
+    template: 'In the following text: "{text}", check that the following condition
+      is satisfied: "{condition}". Answer only True or False. '
+  Evaluator:
+    input_variables:
+    - text
+    - criteria
+    template: 'In the following text: "{text}", evaluate the criteria: "{criteria}".'
+  Summarizer:
+    input_variables:
+    - text
+    template: 'Summarize the following text: "{text}". '
+  Critic:
+    input_variables:
+    - text
+    - criteria
+    template: 'Criticize the following text: "{text}" according to the following criteria:
+      "{criteria}". '
+  Arguer:
+    input_variables:
+    - text
+    - goal
+    template: 'Argue the following point: "{goal}" in response to the following: "{text}". '
+  Identifier:
+    input_variables:
+    - name
+    template: 'You are "{name}". Identify yourself! '
+  Recaller:
+    input_variables:
+    - memory
+    template: 'You remember the following: "{memory}". '
+component-presets:
+  UnorderedLister:
+    shapes:
+      - body:
+        shape: rectangle
+        color: salmon
+        x: 0
+        y: 0
+        width: 50
+        height: 40
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 22
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      subject:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+    type: llmactor
+    args: UnorderedLister
+  OrderedLister:
+    shapes:
+      - body:
+        shape: rectangle
+        color: light salmon
+        x: 0
+        y: 0
+        width: 50
+        height: 40
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 22
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      subject:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+    type: llmactor
+    args: OrderedLister
+  Evaluator:
+    shapes:
+      - body:
+        shape: rectangle
+        color: light blue
+        x: 0
+        y: 0
+        width: 50
+        height: 60
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 42
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+      criteria:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 42
+    type: llmactor
+    args: Evaluator
+  Checker:
+    shapes:
+      - body:
+        shape: rectangle
+        color: lime green
+        x: 0
+        y: 0
+        width: 50
+        height: 60
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 42
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+      condition:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 42
+    type: llmactor
+    args: Checker
+  Summarizer:
+    shapes:
+      - body:
+        shape: rectangle
+        color: gold
+        x: 0
+        y: 0
+        width: 50
+        height: 40
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 22
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+    type: llmactor
+    args: Summarizer
+  Critic:
+    shapes:
+      - body:
+        shape: rectangle
+        color: tomato
+        x: 0
+        y: 0
+        width: 50
+        height: 60
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 42
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+      criteria:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 42
+    type: llmactor
+    args: Critic
+  Input:
+    shapes:
+      - body:
+        shape: rectangle
+        color: grey
+        x: 0
+        y: 0
+        width: 50
+        height: 40
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 22
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+    type: input
+    args: ''
+  Memory:
+    shapes:
+      - body:
+        shape: rectangle
+        color: bisque
+        x: 0
+        y: 0
+        width: 50
+        height: 80
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      out:
+        direction: out
+        shape: circle
+        color: blue
+        radius: 8
+        x: 42
+        y: 62
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      store:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+      clear:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 42
+      replace:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 62
+    type: memory
+    args: ''
+  Conditional:
+    shapes:
+      - body:
+        shape: rectangle
+        color: bisque
+        x: 0
+        y: 0
+        width: 50
+        height: 40
+    ports:
+      if-true:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      if-false:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 22
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+    type: conditional
+    args: ''
+  Voice:
+    shapes:
+      - body:
+        shape: rectangle
+        color: green
+        x: 0
+        y: 0
+        width: 50
+        height: 60
+    ports:
+      alert:
+        direction: out
+        shape: circle
+        color: red
+        radius: 8
+        x: 42
+        y: 2
+      wake:
+        direction: in
+        shape: circle
+        color: red
+        radius: 8
+        x: -8
+        y: 2
+      text:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 22
+      voice:
+        direction: in
+        shape: circle
+        color: blue
+        radius: 8
+        x: -8
+        y: 42
+    type: voice
+    args: ''

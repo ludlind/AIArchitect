@@ -5,7 +5,6 @@ from tkinter import Frame, Label, Scrollbar, PanedWindow, Entry, StringVar
 
 from .port import Port
 from .component import Component
-import json
 import sys
 
 class InfoDisplay(Frame):

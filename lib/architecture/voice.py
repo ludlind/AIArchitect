@@ -1,11 +1,11 @@
-from .actorinterface import ActorInterface
+from .interface import Interface
 from elevenlabs import generate, play
 
-class VoiceActor(ActorInterface):
+class Voice(Interface):
     
-    _type_label = "voiceactor"
+    _type_label = "voice"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = "Voice"
         self._bindings = []
         self._alerts = []
@@ -22,10 +22,10 @@ class VoiceActor(ActorInterface):
     
     def act(self):
         self.say()
-        for (actor, to, _) in self._bindings:
-            actor.receive(to, response)
-        for actor in self._alerts:
-            actor.act()
+        for (component, to, _) in self._bindings:
+            component.receive(to, response)
+        for component in self._alerts:
+            component.act()
 
     def receive(self,
                 key: str,
@@ -36,14 +36,14 @@ class VoiceActor(ActorInterface):
             self._voice = f"{value.strip()}"
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
-        self._bindings.append((actor, to, port))
+        self._bindings.append((component, to, port))
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     @property
     def name(self):

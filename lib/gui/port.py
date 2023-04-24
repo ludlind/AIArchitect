@@ -1,27 +1,22 @@
 import tkinter as tk
+from .canvasobject import CanvasObject
+#from .component import Component
 
 class Port:
 
     currently_connecting = None
 
-    def __init__(self, app, component, label, portdict, x, y):
-        self.app = app
-        self.canvas = app.canvas
+    def __init__(self, component, label, portdict):
+        self.app = component.app
+        self.canvas = component.canvas
         self.component = component
         self.label = label
         self.value = ""
-        if self.label == "alert":
-            self.fill = "red"
-        elif self.label == "wake":
-            self.fill = "red"
-        else:
-            self.fill = "blue"
-        self.radius = 8
         self.direction = portdict["direction"]
+        self.fill = portdict["color"]
         self.x, self.y = portdict["x"], portdict["y"]
-        self.circle = self.canvas.create_oval(x + self.x - self.radius, y + self.y - self.radius,
-                                              x + self.x + self.radius, y + self.y + self.radius,
-                                              fill=self.fill, outline="")
+        self.radius = portdict["radius"]
+        self.circle =  component.add_shape(portdict, setTag="port")
         self.connected_lines = []
         self.canvas.tag_bind(self.circle, "<Button-1>", lambda event: self.on_left_click(event, self.canvas, self))
 
@@ -36,35 +31,44 @@ class Port:
         self._remove_connection_to(target_port)
         target_port._remove_connection_to(self)
 
+    def connect(self, target_port, curvex=0, curvey=0):
+        line = self.canvas.create_line(self.absx, self.absy,
+                                       target_port.absx, target_port.absy,
+                                       width=8, fill="darkgrey",
+                                       smooth=True, tags="connection")
+        self.canvas.tag_lower("connection", "port")
+        self.canvas.tag_lower("body", "connection")
+        self.canvas.tag_bind(line, "<B1-Motion>", lambda event: cls.line_on_left_hold(event, port=port, line=line))
+        self.connected_lines.append((line, target_port, "from", curvex, curvey))
+        target_port.connected_lines.append((line, self, "to", curvex, curvey))
+        self.update()
+
     def __del__(self):
-        self.canvas.delete(self.circle)
         for line, port, _, _, _ in self.connected_lines:
             port._remove_connection_to(self)
 
     @property
     def absx(self):
-        return self.component.x + self.x
+        return self.component.x + self.x + self.radius
 
     @property
     def absy(self):
-        return self.component.y + self.y
+        return self.component.y + self.y + self.radius
 
-    def move(self):
-        self.canvas.moveto(self.circle, self.absx - self.radius, self.absy - self.radius)
+    def update(self):
         for line, target, position, curvex, curvey in self.connected_lines:
             if position == "from":
                 self.canvas.coords(line,
                                    self.absx, self.absy,
-                                   0.5*(target.absx + self.absx) + curvex, 0.5*(target.absy + self.absy) + curvey,
+                                   0.5*(target.absx + self.absx) + curvex,
+                                   0.5*(target.absy + self.absy) + curvey,
                                    target.absx, target.absy)
             else:
                 self.canvas.coords(line,
                                    self.absx, self.absy,
-                                   0.5*(target.absx + self.absx) + curvex, 0.5*(target.absy + self.absy) + curvey,
+                                   0.5*(target.absx + self.absx) + curvex,
+                                   0.5*(target.absy + self.absy) + curvey,
                                    target.absx, target.absy)
-                #self.canvas.coords(line, target.absx, target.absy,
-                #                   target.absx + curvex, target.absy + curvey,
-                #                   self.absx, self.absy)
 
     def display_info(self):
         infodisp = self.app.infodisp
@@ -91,7 +95,7 @@ class Port:
                 self.display_info()
             infodisp.addEntry(self.value, set_value)
 
-    def dictionary_setup_stage(self, rootdict):
+    def serialize_setup(self, rootdict):
         port_setup_dict = {}
         if not self.value == "":
             if self.label != "alert" and self.label != "wake":
@@ -100,7 +104,7 @@ class Port:
                 else:
                     rootdict["receive"] = {self.label: self.value}
 
-    def dictionary_struct_stage(self, rootdict):
+    def serialize_struct(self, rootdict):
         port_struct_dict = {}
         if self.direction == "out":
             if self.label == "alert":
@@ -110,14 +114,58 @@ class Port:
                     rootdict["alert"] = port_struct_dict
             else:
                 for (_, con_port, _, _, _) in self.connected_lines:
-                    port_struct_dict[con_port.component.label] = con_port.label
+                    port_struct_dict[con_port.component.label] = [con_port.label, self.label]
                 if port_struct_dict:
                     rootdict["bind"] = port_struct_dict
     
-    def dictionary_run_stage(self, rootdict):
+    def serialize_run(self, rootdict):
         if not self.value == "":
             if self.label == "wake":
                 rootdict["act"] = ""
+
+    def serialize_canvas(self, portdict):
+        conlist = []
+        for (_, port, direction, curvex, curvey) in self.connected_lines:
+            if direction == "from":
+                condict = {}
+                condict["target-component"] = port.component.label
+                condict["target-port"] = port.label
+                condict["curve-x"] = curvex
+                condict["curve-y"] = curvey
+                conlist.append(condict)
+        if conlist:
+            portdict[self.label] = conlist
+    """
+    @classmethod
+    def deserailize_canvas(cls, comp, portdict):
+        for label, conlist in portdict.items():
+            port = None
+            for p in comp.ports:
+                if p.label == label:
+                    port = p
+                    break
+            if port is None:
+                print(f"Port {label} does not exist.")
+                continue
+            for condict in conlist:
+                tcomp = None
+                for obj in CanvasObject:
+                    if isinstance(obj, Component) and obj.label == condict["target-component"]:
+                        tcomp = obj
+                        break
+                if tcomp is None:
+                    print(f"Component {condict['target-component']} does not exist.")
+                    continue
+                tport = None
+                for p in tcomp.ports:
+                    if p.label == condict["target-port"]:
+                        tport = p
+                        break
+                if tport is None:
+                    print(f"Port {condict['target-port']} does not exits.")
+                    continue
+                port.connect(tport, curvex=condict["curve-x"], curvey=condict["curve-y"])
+    """
 
     @classmethod
     def on_left_click(cls, event, canvas, port):
@@ -134,17 +182,7 @@ class Port:
                             cls.currently_connecting.remove_connection(port)
                             connection_exists = True
                     if not connection_exists:
-                        line = canvas.create_line(cls.currently_connecting.absx, cls.currently_connecting.absy,
-                                                  port.absx, port.absy,
-                                                  width=8, fill="darkgrey",
-                                                  smooth=True)
-                        canvas.tag_lower(line)
-                        cls.currently_connecting.canvas.tag_bind(line, "<B1-Motion>",
-                                                                 lambda event: cls.line_on_left_hold(event,
-                                                                                                     port=port,
-                                                                                                     line=line))
-                        cls.currently_connecting.connected_lines.append((line, port, "from", 0, 0))
-                        port.connected_lines.append((line, cls.currently_connecting, "to", 0, 0))
+                        cls.currently_connecting.connect(port)
                 if cls.currently_connecting is not None:
                     canvas.itemconfig(cls.currently_connecting.circle, fill=cls.currently_connecting.fill)
                     cls.currently_connecting = None
@@ -159,4 +197,4 @@ class Port:
                 for j, (ln2, pt2, lb2, _, _) in enumerate(pt.connected_lines):
                     if ln2 is line:
                         pt.connected_lines[j] = (ln2, pt2, lb2, x, y)
-                port.move()
+                port.update()

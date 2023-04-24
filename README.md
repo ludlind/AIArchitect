@@ -5,11 +5,11 @@ TODO:
 - [ ] Generalize architecture loading.
 - [ ] Switch from langchain to OpenAI API.
 - [ ] Add pincecone memory actor.
-- [ ] Replace actor with agent in most cases.
-- [ ] Store component positions in save-file.
-- [ ] Generalize Component class and allow for different types of components.
-- [ ] Improve context menu. Add categories.
-- [ ] Implement run feature.
+- [x] Replace actor with component in most cases.
+- [x] Store component positions in save-file.
+- [x] Generalize Component class and allow for different types of components.
+- [x] Improve context menu. Add categories.
+- [x] Implement run feature.
 - [ ] Extend component settings avaliable from GUI.
 - [ ] Add include settings in GUI.
 - [ ] Finish wrappers and add GUI implementation.
@@ -18,5 +18,5 @@ TODO:
 - [ ] Add general preset system that is easily extendable.
 - [ ] Improve look and feel.
 - [ ] Implement copy, cut and paste features in GUI.
-
-
+- [ ] Fix bindings from the GUI.
+- [ ] Complete canvas load and save.

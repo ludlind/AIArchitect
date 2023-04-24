@@ -1,27 +1,28 @@
-"""
-from actorinterface import ActorInterface
+from .interface import Interface
 
-class Tunnel(ActorInterface):
-    #"""
-    Basically just a temporary solution to the issue of connection lines overlapping components.
-    #"""
+class Memory(Interface):
+    
+    _type_label = "memory"
 
-    tunnels = []
-
-    def __init__(self):
-        self._name = "Tunnel"
-        self._id
+    def __init__(self, args=None):
+        self._name = "Memory"
         self._bindings = []
         self._alerts = []
         self._silent = False
         self._memory = ""
     
+    def say(self):
+        if not self._silent:
+            prestring = f"{self.name}:\n" if self.name != "" else ""
+            print(f"{prestring}{self._memory}\n")
+        return self._memory
+    
     def act(self):
         response = self.say()
-        for (actor, to, _) in self._bindings:
-            actor.receive(to, response)
-        for actor in self._alerts:
-            actor.act()
+        for (component, to, _) in self._bindings:
+            component.receive(to, response)
+        for component in self._alerts:
+            component.act()
 
     def receive(self,
                 key: str,
@@ -34,14 +35,14 @@ class Tunnel(ActorInterface):
             self._memory = f"{value.strip()}\n"
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
-        self._bindings.append((actor, to, port))
+        self._bindings.append((component, to, port))
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     @property
     def name(self):
@@ -60,4 +61,3 @@ class Tunnel(ActorInterface):
     def silent(self,
              silent: bool):
         self._silent = silent
-"""

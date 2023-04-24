@@ -1,11 +1,11 @@
-from .actorinterface import ActorInterface
+from .interface import Interface
 import re
 
-class ConditionalActor(ActorInterface):
+class Conditional(Interface):
     
-    _type_label = "conditionalactor"
+    _type_label = "conditional"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = "Conditional"
         self._alerts1 = []
         self._alerts2 = []
@@ -21,11 +21,11 @@ class ConditionalActor(ActorInterface):
     def act(self):
         self.say()
         if self._cond:
-            for actor in self._alerts1:
-                actor.act()
+            for component in self._alerts1:
+                component.act()
         else:
-            for actor in self._alerts2:
-                actor.act()
+            for component in self._alerts2:
+                component.act()
 
     def receive(self,
                 key: str,
@@ -34,18 +34,18 @@ class ConditionalActor(ActorInterface):
             self._cond = re.fullmatch(self._regex, value) is not None
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
         if port == "if-true":
-            self._alerts1.append(actor)
+            self._alerts1.append(component)
         elif port == "if-false":
-            self._alerts2.append(actor)
+            self._alerts2.append(component)
 
     def alert(self,
-              actor: ActorInterface):
+              component: Interface):
         pass
-        #self._alerts.append(actor)
+        #self._alerts.append(component)
 
     @property
     def name(self):

@@ -1,10 +1,10 @@
-from .actorinterface import ActorInterface
+from .interface import Interface
 
-class InputActor(ActorInterface):
+class Input(Interface):
     
-    _type_label = "inputactor"
+    _type_label = "input"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = "Input"
         self._prompt = "Prompt: "
         self._bindings = []
@@ -20,10 +20,10 @@ class InputActor(ActorInterface):
     
     def act(self):
         response = self.say()
-        for (actor, to, _) in self._bindings:
-            actor.receive(to, response)
-        for actor in self._alerts:
-            actor.act()
+        for (component, to, _) in self._bindings:
+            component.receive(to, response)
+        for component in self._alerts:
+            component.act()
 
     def receive(self,
                 key: str,
@@ -32,14 +32,14 @@ class InputActor(ActorInterface):
             self._prompt = f"{value.strip()}"
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
-        self._bindings.append((actor, to, port))
+        self._bindings.append((component, to, port))
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     @property
     def name(self):

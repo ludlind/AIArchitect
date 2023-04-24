@@ -1,11 +1,11 @@
-from .actorinterface import ActorInterface
+from .interface import Interface
 import re
 
-class RegexActor(ActorInterface):
+class Regex(Interface):
     
-    _type_label = "regexactor"
+    _type_label = "regex"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = "Regular Expression"
         self._bindings = []
         self._alerts = []
@@ -27,13 +27,13 @@ class RegexActor(ActorInterface):
     
     def act(self):
         first, rest = self.say()
-        for (actor, to, port) in self._bindings:
+        for (component, to, port) in self._bindings:
             if port == "first":
-                actor.receive(to, first)
+                component.receive(to, first)
             elif port == "rest":
-                actor.receive(to, rest)
-        for actor in self._alerts:
-            actor.act()
+                component.receive(to, rest)
+        for component in self._alerts:
+            component.act()
 
     def receive(self,
                 key: str,
@@ -44,14 +44,14 @@ class RegexActor(ActorInterface):
             self._text = value
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
-        self._bindings.append((actor, to, port))
+        self._bindings.append((component, to, port))
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     @property
     def name(self):

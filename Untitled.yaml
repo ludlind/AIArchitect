@@ -1,0 +1,47 @@
+architecture:
+  run:
+    Input 1:
+      act: ''
+  setup:
+    Input 1:
+      init:
+      - inputactor
+      - ''
+    Voice 1:
+      init:
+      - voiceactor
+      - ''
+      receive:
+        voice: Bella
+  structure:
+    Input 1:
+      alert:
+        Voice 1: ''
+      bind:
+        Voice 1:
+        - text
+        - out
+canvas:
+  component:
+    Input 1:
+      ports:
+        alert:
+        - curve-x: 0
+          curve-y: 0
+          target-component: Voice 1
+          target-port: wake
+        out:
+        - curve-x: 0
+          curve-y: 0
+          target-component: Voice 1
+          target-port: text
+      preset: Input
+      x: 68.0
+      y: 131.0
+    Voice 1:
+      ports: {}
+      preset: Voice
+      x: 186.0
+      y: 140.0
+include:
+- presets/preset.yaml

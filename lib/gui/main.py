@@ -5,19 +5,26 @@ from tkinter import Frame, Label, Scrollbar, PanedWindow, Entry, StringVar
 
 from ..architecture import *
 from ..architecture import LLMActor
+from .serializer import serialize_architecture, serialize_canvas, deserialize_canvas
 
 from .infodisplay import InfoDisplay
 from .port import Port
 from .component import Component
 import json
+import yaml
 import sys
+
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 class Application(Tk):
 
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
         self.geometry("500x400+300+300")
-        self.include_files = ["presets/preset.json"]
+        self.include_files = ["presets/preset.yaml"]
         self.canvas = None
         self.text = None
         self.shift_pressed = None
@@ -78,14 +85,18 @@ class Application(Tk):
         runMenu.add_command(label="Debug", command=lambda: self.run_dictionary(True))
         self.menubar.add_cascade(label="Run", menu=runMenu)
 
-    def load_components_from_file(self, filename):
+    def load_from_file(self, filename):
         with open(filename, "r") as f:
-            self.compdict = json.load(f)
-        Component.loadPresets(self.compdict)
+            self.compdict = yaml.load(f, Loader=Loader)
+            f.close()
+        if "component-presets" in self.compdict:
+            Component.loadPresets(self.compdict["component-presets"])
+        if "canvas" in self.compdict:
+            deserialize_canvas(self, self.compdict["canvas"])
 
     def save_dictionary_to_file(self, filename, dictionary):
         with open(filename, "w") as f:
-            json.dump(dictionary, f, indent=4)
+            yaml.dump(dictionary, f, Dumper=Dumper)
 
     def selection_destroy(self):
         self.canvas.delete(self.selection)
@@ -93,28 +104,29 @@ class Application(Tk):
 
     def open_file(self):
         name = filedialog.askopenfilename()
-        self.load_components_from_file(name)
+        self.load_from_file(name)
 
     def save_file(self):
-        name = filedialog.asksaveasfilename(initialfile = 'Untitled.json',
-                                            defaultextension=".json",
-                                            filetypes=[("All Files","*.*"),("JavaScript Object Notation","*.json")])
+        name = filedialog.asksaveasfilename(initialfile = 'Untitled.yaml',
+                                            defaultextension=".yaml",
+                                            filetypes=[("All Files","*.*"),("YAML","*.yaml")])
         dictionary = {}
-        dictionary["architecture"] = Component.dictionary_architecture()
+        dictionary["architecture"] = serialize_architecture()
         dictionary["include"] = self.include_files
+        dictionary["canvas"] = serialize_canvas()
         self.save_dictionary_to_file(name, dictionary)
 
     def run_dictionary(self, debug):
-        pass
-        #for incfilename in self.include_files:
-        #    archiload.loadFile(incfilename, debug)
-        #dictionary = {}
-        #dictionary["architecture"] = Component.dictionary_architecture()
-        #if "llmactor-presets" in dictionary:
-        #    LLMActor.loadPresets(dictionary)
-        #if "architecture" in dictionary:
-        #    archiload.archdebugmes("\nBuild Order:", 0, debug)
-        #    archiload.loadArch(dictionary, debug=debug)
+        for incfilename in self.include_files:
+            archiload.loadFile(incfilename, debug)
+        dictionary = {}
+        dictionary["architecture"] = serialize_architecture()
+        dictionary["include"] = self.include_files
+        if "llmactor-presets" in dictionary:
+            LLMActor.loadPresets(dictionary)
+        if "architecture" in dictionary:
+            archiload.debugmes("\nBuild Order:", 0, debug)
+            archiload.loadArch(dictionary, debug=debug)
 
     def on_ctrl_key(self, event):
         self.ctrl_pressed.set(True)
@@ -150,7 +162,7 @@ class Application(Tk):
     def on_canvas_left_release(self, event):
         if self.selection is not None:
             Component.clear_selection()
-            for comp in Component.components:
+            for comp in Component.objects:
                 inx = (self.click_x - comp.x)*(self.canvas.canvasx(event.x) - comp.x) < 0
                 iny = (self.click_y - comp.y)*(self.canvas.canvasy(event.y) - comp.y) < 0
                 if inx and iny:
@@ -177,15 +189,22 @@ class Application(Tk):
                 self.context_menu = None
             self.context_menu = Menu(self.canvas,
                                    tearoff=0)
-            for label in Component.presets.keys():
+            categories = {}
+            for presetdict in Component.presets.values():
+                if presetdict["type"] in categories:
+                    if categories[presetdict["type"]] is self.context_menu:
+                        submenu = Menu(self.context_menu, tearoff=0)
+                        categories[presetdict["type"]] = submenu
+                        self.context_menu.add_cascade(label=presetdict["type"], menu=submenu)
+                else:
+                    categories[presetdict["type"]] = self.context_menu
+            for label, presetdict in Component.presets.items():
                 def cmd(label=label):
-                    Component.components.append(
-                        Component(self,
-                                           self.canvas.canvasx(event.x),
-                                           self.canvas.canvasy(event.y),
-                                           label)
-                    )
-                self.context_menu.add_command(label=label, command=cmd)
+                    Component(self,
+                              self.canvas.canvasx(event.x),
+                              self.canvas.canvasy(event.y),
+                              label)
+                categories[presetdict["type"]].add_command(label=label, command=cmd)
             self.context_menu.post(event.x_root,
                                    event.y_root)
 
@@ -195,7 +214,7 @@ class Application(Tk):
 def main():
     app = Application()
     for filename in app.include_files:
-        app.load_components_from_file(filename)
+        app.load_from_file(filename)
     app.create()
     app.mainloop()
 

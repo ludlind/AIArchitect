@@ -2,16 +2,15 @@ import langchain as lc
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from .actorinterface import ActorInterface
+from .interface import Interface
 from typing import Union
-import json
 
-class LLMActor(ActorInterface):
+class LLMActor(Interface):
 
     presets = {}
     _type_label = "llmactor"
 
-    def __init__(self):
+    def __init__(self, args=None):
         self._name = ""
         self._bindings = []
         self._alerts = []
@@ -20,6 +19,8 @@ class LLMActor(ActorInterface):
         self._llm = None
         self._prompt = None
         self._chain = None
+        if args is not None:
+            self.loadPreset(args[0])
     
     @classmethod
     def preset(cls,
@@ -79,10 +80,10 @@ class LLMActor(ActorInterface):
 
     def act(self):
         response = self.say()
-        for (actor, to, _) in self._bindings:
-            actor.receive(to, response)
-        for actor in self._alerts:
-            actor.act()
+        for (component, to, _) in self._bindings:
+            component.receive(to, response)
+        for component in self._alerts:
+            component.act()
 
     def receive(self,
                 key: str,
@@ -90,14 +91,14 @@ class LLMActor(ActorInterface):
         self._ports[key] = value 
     
     def bind(self,
-             actor: ActorInterface,
+             component: Interface,
              to: str,
              port: str=""):
-        self._bindings.append((actor, to, port))
+        self._bindings.append((component, to, port))
 
     def alert(self,
-              actor: ActorInterface):
-        self._alerts.append(actor)
+              component: Interface):
+        self._alerts.append(component)
 
     @property
     def name(self):
